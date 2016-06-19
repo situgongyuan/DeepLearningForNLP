@@ -9,11 +9,11 @@ def normalizeRows(x):
     """ Row normalization function """
     # Implement a function that normalizes each row of a matrix to have unit length
     
-    ### YOUR CODE HERE
-    raise NotImplementedError
-    ### END YOUR CODE
-    
-    return x
+    squared_x = x ** 2
+    s = np.sum(squared_x,axis = 1,keepdims = True)
+    s = np.sqrt(s)
+
+    return x / s
 
 def test_normalize_rows():
     print "Testing normalizeRows..."
@@ -47,35 +47,38 @@ def softmaxCostAndGradient(predicted, target, outputVectors, dataset):
     
     # We will not provide starter code for this function, but feel    
     # free to reference the code you previously wrote for this        
-    # assignment!                                                  
-    
-    ### YOUR CODE HERE
-    raise NotImplementedError
-    ### END YOUR CODE
-    
+    # assignment!
+    prods = np.dot(outputVectors,predicted.T) # 1xV
+    probs = softmax(prods) # 1xV
+    cost = -np.log(probs[target]) # 1x1
+
+    dscore = probs
+    dscore[target] -= 1.0
+    gradPred = np.dot(dscore,outputVectors)
+    grad = np.outer(dscore,predicted)
     return cost, gradPred, grad
 
 def negSamplingCostAndGradient(predicted, target, outputVectors, dataset, 
     K=10):
     """ Negative sampling cost function for word2vec models """
 
-    # Implement the cost and gradients for one predicted word vector  
-    # and one target word vector as a building block for word2vec     
-    # models, using the negative sampling technique. K is the sample  
-    # size. You might want to use dataset.sampleTokenIdx() to sample  
-    # a random word index. 
-    # 
-    # Note: See test_word2vec below for dataset's initialization.
-    #                                       
-    # Input/Output Specifications: same as softmaxCostAndGradient     
-    # We will not provide starter code for this function, but feel    
-    # free to reference the code you previously wrote for this        
-    # assignment!
-    
-    ### YOUR CODE HERE
-    raise NotImplementedError
-    ### END YOUR CODE
-    
+    negative_samples = [dataset.sampleTokenIdx() for i in range(K)]
+
+    r_W = np.dot(predicted, outputVectors.T) # 1xV
+    r_W_prob = sigmoid(r_W) # 1xV
+
+    cost = -np.log(r_W_prob[target]) -np.sum(np.log(1 - r_W_prob[negative_samples]))
+
+    gradPred = -outputVectors[target,:] * (1 - r_W_prob[target])
+    gradPred += np.dot(r_W_prob[negative_samples], outputVectors[negative_samples, :])
+
+    grad = np.zeros(np.shape(outputVectors))
+    grad[target, :] = -predicted * (1-r_W_prob[target])
+
+    for negative_sample in negative_samples:
+        grad[negative_sample,:] += predicted*r_W_prob[negative_sample]
+
+
     return cost, gradPred, grad
 
 
@@ -105,10 +108,18 @@ def skipgram(currentWord, C, contextWords, tokens, inputVectors, outputVectors,
     # free to reference the code you previously wrote for this        
     # assignment!
 
-    ### YOUR CODE HERE
-    raise NotImplementedError
-    ### END YOUR CODE
-    
+    cost = 0
+    predicted = inputVectors[tokens[currentWord], :]    # 中心词汇,用来预测周边的词汇
+    gradIn = np.zeros(np.shape(inputVectors))
+    gradOut = np.zeros(np.shape(outputVectors))
+    for c_word in contextWords:
+        target = tokens[c_word]
+        c_cost, c_gradPred, c_grad = word2vecCostAndGradient(predicted, target, outputVectors)
+        cost += c_cost
+
+        gradIn[tokens[currentWord],:] += c_gradPred
+        gradOut += c_grad
+
     return cost, gradIn, gradOut
 
 def cbow(currentWord, C, contextWords, tokens, inputVectors, outputVectors, 

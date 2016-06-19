@@ -18,9 +18,9 @@ class StanfordSentiment:
         if hasattr(self, "_tokens") and self._tokens:
             return self._tokens
 
-        tokens = dict()
-        tokenfreq = dict()
-        wordcount = 0
+        tokens = dict()   # {'haha':1,'me':2,...}
+        tokenfreq = dict() # {'haha':3, 'me':1000,...}
+        wordcount = 0   # totoal number of words
         revtokens = []
         idx = 0
 
@@ -45,7 +45,8 @@ class StanfordSentiment:
         self._wordcount = wordcount
         self._revtokens = revtokens
         return self._tokens
-    
+
+    # 读取文件,将每一句话split成一个词语组成的list
     def sentences(self):
         if hasattr(self, "_sentences") and self._sentences:
             return self._sentences
