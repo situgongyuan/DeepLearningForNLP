@@ -8,10 +8,7 @@ from q4_softmaxreg import softmaxRegression, getSentenceFeature, accuracy, softm
 
 # Try different regularizations and pick the best!
 # NOTE: fill in one more "your code here" below before running!
-REGULARIZATION = None   # Assign a list of floats in the block below
-### YOUR CODE HERE
-raise NotImplementedError
-### END YOUR CODE
+REGULARIZATION = [1e-3, 1e-2, 1e-1, 0, 1, 10, 100]  # Assign a list of floats in the block below
 
 # Load the dataset
 dataset = StanfordSentiment()

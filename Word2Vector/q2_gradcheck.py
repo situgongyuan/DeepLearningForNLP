@@ -8,9 +8,8 @@ def gradcheck_naive(f, x):
     - f should be a function that takes a single argument and outputs the cost and its gradients
     - x is the point (numpy array) to check the gradient at
     """ 
-
     rndstate = random.getstate()
-    random.setstate(rndstate)  
+    random.setstate(rndstate)
     fx, grad = f(x) # Evaluate function value at original point
     h = 1e-4
 
@@ -19,14 +18,19 @@ def gradcheck_naive(f, x):
     while not it.finished:
         ix = it.multi_index
 
-        oldval = x[ix]
-        x[ix] = oldval + h # increment by h
-        fxph, _ = f(x) # evalute f(x + h)
-        x[ix] = oldval - h
-        fxmh, _ = f(x) # evaluate f(x - h)
-        x[ix] = oldval # restore
-
+        ### YOUR CODE HERE: try modifying x[ix] with h defined above to compute numerical gradients
+        ### make sure you call random.setstate(rndstate) before calling f(x) each time, this will make it
+        ### possible to test cost functions with built in randomness later
+        x[ix] += h
+        random.setstate(rndstate)
+        fxph = f(x)[0]
+        x[ix] -= 2 * h
+        random.setstate(rndstate)
+        fxmh = f(x)[0]
+        x[ix] += h
         numgrad = (fxph - fxmh) / (2 * h)
+
+        ### END YOUR CODE
 
         # Compare gradients
         reldiff = abs(numgrad - grad[ix]) / max(1, abs(numgrad), abs(grad[ix]))
@@ -35,10 +39,11 @@ def gradcheck_naive(f, x):
             print "First gradient error found at index %s" % str(ix)
             print "Your gradient: %f \t Numerical gradient: %f" % (grad[ix], numgrad)
             return
-    
+
         it.iternext() # Step to next dimension
 
     print "Gradient check passed!"
+
 
 def sanity_check():
     """
